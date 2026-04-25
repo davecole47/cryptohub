@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CryptoHub - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    .nav-item { transition: all 0.2s; }
+    .nav-item:hover { background-color: #1f2937; }
+    .nav-item.active { background-color: #374151; border-left: 4px solid #3b82f6; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .coin-row:hover { background-color: #27272a; }
+    .error { color: #ef4444; font-size: 0.875rem; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-zinc-900 border-r border-zinc-800 p-4 flex flex-col overflow-y-auto">
+      <div class="flex items-center gap-2 mb-8 px-3">
+        <i class="fa-solid fa-coins text-3xl text-blue-500"></i>
+        <h1 class="text-2xl font-bold">CryptoHub</h1>
+      </div>
+
+      <nav class="flex-1 space-y-1">
+        <a href="#" onclick="showSection('home')" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="#" onclick="showSection('deposit')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-download"></i> Deposit
+        </a>
+        <a href="#" onclick="showSection('withdraw')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-upload"></i> Withdraw
+        </a>
+        <a href="#" onclick="showSection('swap')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-arrow-right-arrow-left"></i> Swap Crypto
+        </a>
+        <a href="#" onclick="showSection('plans')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-hand-holding-dollar"></i> Investment Plans
+        </a>
+        <a href="#" onclick="showSection('copy')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-copy"></i> Copy Expert
+        </a>
+        <a href="#" onclick="showSection('history')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-clock-rotate-left"></i> Profit History
+        </a>
+        <a href="#" onclick="showSection('profile')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm">
+          <i class="fa-solid fa-user"></i> Profile
+        </a>
+      </nav>
+
+      <div class="mt-auto pt-6 border-t border-zinc-800 text-xs text-zinc-400">
+        Balance: <span class="text-green-400 font-medium" id="sidebar-balance">$10,234.56</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-auto">
+      <header class="bg-zinc-900 border-b border-zinc-800 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+        <h2 id="page-title" class="text-2xl font-semibold">Welcome, Victor!</h2>
+        <div class="flex items-center gap-6">
+          <div class="text-right">
+            <div class="text-sm text-zinc-400">Account Balance</div>
+            <div class="text-2xl font-bold text-green-400" id="main-balance">$10,234.56</div>
+          </div>
+          <div class="w-10 h-10 bg-zinc-700 rounded-full flex items-center justify-center cursor-pointer">
+            <i class="fa-solid fa-user"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- HOME SECTION with Real Market Data -->
+      <div id="home" class="section active p-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+            <div class="text-zinc-400 text-sm">Total Profit</div>
+            <div class="text-3xl font-bold text-green-400 mt-2">$1,456.78</div>
+          </div>
+          <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+            <div class="text-zinc-400 text-sm">24h Portfolio Change</div>
+            <div class="text-3xl font-bold text-emerald-400 mt-2">+2.15%</div>
+          </div>
+          <div class="bg-zinc-900 p-6 rounded-2xl border border-zinc-800">
+            <div class="text-zinc-400 text-sm">Active Plans</div>
+            <div class="text-3xl font-bold mt-2">0</div>
+          </div>
+        </div>
+
+        <!-- BTC Chart -->
+        <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 mb-8">
+          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+            <i class="fa-brands fa-bitcoin text-orange-500"></i> Bitcoin (BTC/USD) Live
+          </h3>
+          <div id="chart" class="h-96"></div>
+        </div>
+
+        <!-- Real Market Data Table -->
+        <div class="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+          <h3 class="text-lg font-semibold mb-4">Live Market Data</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-zinc-700">
+                  <th class="text-left py-3">Coin</th>
+                  <th class="text-right py-3">Price</th>
+                  <th class="text-right py-3">24h</th>
+                  <th class="text-right py-3">Market Cap</th>
+                </tr>
+              </thead>
+              <tbody id="market-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- INVESTMENT PLANS SECTION -->
+      <div id="plans" class="section p-8">
+        <h3 class="text-3xl font-semibold mb-8">Investment Plans</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="plans-container">
+          <!-- Populated by JavaScript with real-ish data -->
+        </div>
+      </div>
+
+      <!-- COPY EXPERT SECTION -->
+      <div id="copy" class="section p-8">
+        <h3 class="text-3xl font-semibold mb-8">Copy Expert Traders</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="copy-container">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- WITHDRAW (kept from before) -->
+      <div id="withdraw" class="section p-8 max-w-2xl mx-auto">
+        <div class="bg-zinc-900 rounded-3xl p-8 border border-zinc-800">
+          <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <i class="fa-solid fa-upload"></i> Place a Withdrawal Request
+          </h3>
+          <form id="withdraw-form" onsubmit="handleWithdraw(event)">
+            <!-- Same withdraw form as previous version - omitted for brevity but fully included in real file -->
+            <div class="mb-6">
+              <label class="block text-zinc-400 text-sm mb-2">Withdrawal Amount (USD)</label>
+              <input type="number" id="amount" min="10" value="100" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 text-2xl outline-none focus:border-blue-500">
+            </div>
+            <div class="mb-6">
+              <label class="block text-zinc-400 text-sm mb-2">Method</label>
+              <div class="flex gap-4">
+                <label><input type="radio" name="method" value="crypto" checked onchange="toggleMethod()"> Crypto Wallet</label>
+                <label><input type="radio" name="method" value="bank" onchange="toggleMethod()"> Bank Account</label>
+              </div>
+            </div>
+            <div id="crypto-fields">
+              <label class="block text-zinc-400 text-sm mb-2">Wallet Address</label>
+              <input type="text" id="wallet-address" placeholder="0x... or bc1q..." class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4 outline-none">
+              <div id="wallet-error" class="error mt-1"></div>
+            </div>
+            <div id="bank-fields" class="hidden">
+              <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-zinc-400 text-sm mb-2">Account Name</label><input type="text" id="account-name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4"></div>
+                <div><label class="block text-zinc-400 text-sm mb-2">Account Number</label><input type="text" id="account-number" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4"></div>
+              </div>
+              <div class="mt-4"><label class="block text-zinc-400 text-sm mb-2">Bank Name</label><input type="text" id="bank-name" class="w-full bg-zinc-800 border border-zinc-700 rounded-2xl px-5 py-4"></div>
+            </div>
+            <button type="submit" class="mt-8 w-full bg-blue-600 hover:bg-blue-700 py-5 rounded-2xl font-semibold text-lg">Submit Request</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Other sections (Deposit, Swap, History, Profile) -->
+      <div id="deposit" class="section p-8 text-center"><h3 class="text-3xl">Deposit</h3><p class="text-zinc-400 mt-4">Demo - Choose crypto or fiat.</p></div>
+      <div id="swap" class="section p-8 text-center"><h3 class="text-3xl">Swap Crypto</h3><p class="text-zinc-400 mt-4">Demo swap interface.</p></div>
+      <div id="history" class="section p-8 text-center"><h3 class="text-3xl">Profit History</h3><p class="text-zinc-400 mt-4">Your transactions will appear here.</p></div>
+      <div id="profile" class="section p-8 text-center"><h3 class="text-3xl">Profile</h3><p class="text-zinc-400 mt-4">Account settings.</p></div>
+
+      <!-- Success Modal -->
+      <div id="success-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div class="bg-zinc-900 rounded-3xl p-10 max-w-md text-center">
+          <i class="fa-solid fa-check-circle text-green-500 text-6xl mb-4"></i>
+          <h3 id="modal-title" class="text-2xl font-semibold mb-2"></h3>
+          <p id="modal-text" class="text-zinc-400 mb-6"></p>
+          <button onclick="hideModal()" class="bg-zinc-700 hover:bg-zinc-600 px-8 py-3 rounded-2xl">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let chart;
+
+    // Real CoinGecko API calls
+    async function fetchMarketData() {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=8&page=1&sparkline=false');
+        const data = await res.json();
+        const tbody = document.getElementById('market-table');
+        tbody.innerHTML = '';
+        data.forEach(coin => {
+          const changeClass = coin.price_change_percentage_24h > 0 ? 'text-green-400' : 'text-red-400';
+          const row = document.createElement('tr');
+          row.className = 'coin-row border-b border-zinc-800 last:border-0';
+          row.innerHTML = `
+            <td class="py-4 flex items-center gap-3">
+              <img src="${coin.image}" class="w-6 h-6 rounded-full">
+              <span>${coin.name} <span class="text-zinc-500">(${coin.symbol.toUpperCase()})</span></span>
+            </td>
+            <td class="text-right py-4">$${coin.current_price.toLocaleString()}</td>
+            <td class="text-right py-4 ${changeClass}">${coin.price_change_percentage_24h ? coin.price_change_percentage_24h.toFixed(2) : '0'}%</td>
+            <td class="text-right py-4">$${(coin.market_cap / 1e9).toFixed(1)}B</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (e) {
+        console.log("Market data fetch failed (demo mode)");
+      }
+    }
+
+    function initChart() {
+      const container = document.getElementById('chart');
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: 380,
+        layout: { backgroundColor: '#18181b', textColor: '#a1a1aa' },
+        grid: { vertLines: { color: '#27272a' }, horzLines: { color: '#27272a' } }
+      });
+      const lineSeries = chart.addLineSeries({ color: '#22c55e' });
+
+      fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1')
+        .then(r => r.json())
+        .then(data => {
+          const prices = data.prices.map(([time, price]) => ({ time: Math.floor(time/1000), value: price }));
+          lineSeries.setData(prices);
+        });
+    }
+
+    // Investment Plans (realistic)
+    function loadInvestmentPlans() {
+      const plans = [
+        { name: "Starter", min: 500, profit: "15-25%", duration: "30 days", desc: "Perfect for beginners" },
+        { name: "Growth", min: 2500, profit: "35-55%", duration: "90 days", desc: "Balanced risk & reward" },
+        { name: "Pro", min: 10000, profit: "70-120%", duration: "180 days", desc: "High performance" }
+      ];
+      const container = document.getElementById('plans-container');
+      container.innerHTML = '';
+      plans.forEach(plan => {
+        const div = document.createElement('div');
+        div.className = "bg-zinc-900 rounded-3xl p-8 border border-zinc-800 hover:border-blue-500 transition";
+        div.innerHTML = `
+          <h4 class="text-2xl font-bold">${plan.name}</h4>
+          <div class="my-6">
+            <div class="text-4xl font-bold text-green-400">$${plan.min}</div>
+            <div class="text-zinc-400">Minimum Investment</div>
+          </div>
+          <div class="space-y-3 text-sm">
+            <div>Expected Profit: <span class="text-green-400">${plan.profit}</span></div>
+            <div>Duration: ${plan.duration}</div>
+            <div>${plan.desc}</div>
+          </div>
+          <button onclick="subscribePlan('${plan.name}')" class="mt-8 w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-2xl font-semibold">Subscribe Now</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function subscribePlan(planName) {
+      showModal(`Subscribed to ${planName} Plan!`, `Your $${planName === 'Starter' ? 500 : planName === 'Growth' ? 2500 : 10000} investment has been activated (demo).`);
+    }
+
+    // Copy Expert Traders
+    function loadCopyExperts() {
+      const experts = [
+        { name: "Alex Rivera", followers: 12400, winrate: "87%", profit: "+142%", avatar: "https://i.pravatar.cc/64?u=alex" },
+        { name: "Maya Chen", followers: 8900, winrate: "91%", profit: "+98%", avatar: "https://i.pravatar.cc/64?u=maya" },
+        { name: "Jordan K", followers: 15600, winrate: "79%", profit: "+215%", avatar: "https://i.pravatar.cc/64?u=jordan" }
+      ];
+      const container = document.getElementById('copy-container');
+      container.innerHTML = '';
+      experts.forEach(ex => {
+        const div = document.createElement('div');
+        div.className = "bg-zinc-900 rounded-3xl p-8 border border-zinc-800";
+        div.innerHTML = `
+          <div class="flex items-center gap-4 mb-6">
+            <img src="${ex.avatar}" class="w-16 h-16 rounded-full">
+            <div>
+              <h4 class="font-semibold">${ex.name}</h4>
+              <div class="text-sm text-zinc-400">${ex.followers.toLocaleString()} followers</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-4 text-center mb-8">
+            <div><div class="text-green-400 font-bold">${ex.winrate}</div><div class="text-xs text-zinc-400">Win Rate</div></div>
+            <div><div class="text-green-400 font-bold">${ex.profit}</div><div class="text-xs text-zinc-400">30d Profit</div></div>
+            <div><div class="text-blue-400 font-bold">Copy</div></div>
+          </div>
+          <button onclick="copyTrader('${ex.name}')" class="w-full bg-emerald-600 hover:bg-emerald-700 py-4 rounded-2xl font-semibold">Start Copy Trading</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function copyTrader(name) {
+      showModal(`Copying ${name}`, `You are now copying ${name}'s trades (demo mode). Real copy trading would require funds and API keys from an exchange.`);
+    }
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      const activeLink = Array.from(document.querySelectorAll('.nav-item')).find(a => a.getAttribute('onclick').includes(`'${id}'`));
+      if (activeLink) activeLink.classList.add('active');
+
+      document.getElementById('page-title').textContent = id === 'home' ? 'Welcome, Victor!' : id.charAt(0).toUpperCase() + id.slice(1).replace('copy', 'Copy Expert');
+    }
+
+    // Withdraw functions (same as before)
+    function toggleMethod() {
+      const isCrypto = document.querySelector('input[name="method"]:checked').value === 'crypto';
+      document.getElementById('crypto-fields').classList.toggle('hidden', !isCrypto);
+      document.getElementById('bank-fields').classList.toggle('hidden', isCrypto);
+    }
+
+    function handleWithdraw(e) {
+      e.preventDefault();
+      const amount = document.getElementById('amount').value;
+      if (amount > 0) {
+        showModal("Withdrawal Request Submitted", `$${amount} withdrawal request received. Processing time: 24-48 hours (demo).`);
+        e.target.reset();
+        toggleMethod();
+      }
+    }
+
+    function showModal(title, text) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-text').textContent = text;
+      document.getElementById('success-modal').classList.remove('hidden');
+    }
+
+    function hideModal() {
+      document.getElementById('success-modal').classList.add('hidden');
+    }
+
+    // Initialize everything
+    window.onload = () => {
+      initChart();
+      fetchMarketData();
+      loadInvestmentPlans();
+      loadCopyExperts();
+      showSection('home');
+      toggleMethod();
+
+      // Simulate balance change
+      setInterval(() => {
+        let bal = parseFloat(document.getElementById('main-balance').textContent.replace(/[$,]/g,''));
+        bal += (Math.random() * 8 - 4);
+        const formatted = '$' + bal.toFixed(2);
+        document.getElementById('main-balance').textContent = formatted;
+        document.getElementById('sidebar-balance').textContent = formatted;
+      }, 12000);
+    };
+
+    window.addEventListener('resize', () => {
+      if (chart) chart.resize(document.getElementById('chart').clientWidth, 380);
+    });
+  </script>
+</body>
+</html>
